@@ -1,16 +1,16 @@
-# Multi-stage Docker build for Spring Boot on Render
-# Stage 1: Build
-FROM eclipse-temurin:17-jdk-jammy AS build
+# Stage 1: Build Spring Boot backend
+FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
 
-COPY .mvn/ .mvn/
-COPY mvnw pom.xml ./
-RUN chmod +x ./mvnw && ./mvnw dependency:go-offline -B || true
+# Cache dependencies
+COPY pom.xml ./
+RUN mvn dependency:go-offline -B || true
 
+# Build application
 COPY src ./src
-RUN ./mvnw clean package -DskipTests
+RUN mvn clean package -DskipTests
 
-# Stage 2: Production JRE
+# Stage 2: Production JRE runtime
 FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 
